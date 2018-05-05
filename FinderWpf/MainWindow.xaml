@@ -12,19 +12,15 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TextBox x:Name="pathBox" Margin="0" TextWrapping="Wrap" Text="path"/>
-
-        <Grid x:Name="colGrid" Margin="0,5,0,0" Grid.Row="1">
+        <Grid Grid.Row="1" x:Name="filePreviewGrid" Margin="0,0,0,0">
             <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="150" />
+                <ColumnDefinition Width="1" />
                 <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="5" />
-                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="1" />
+                <ColumnDefinition Width="*" MinWidth="150"/>
             </Grid.ColumnDefinitions>
+
             <ListBox x:Name="listBox1" SelectionChanged="listBox_SelectionChanged" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" >
                 <ListBox.ItemTemplate>
                     <DataTemplate>
@@ -42,14 +38,38 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-            <GridSplitter x:Name="gridSplitter" HorizontalAlignment="Stretch" Height="100" Margin="0" Width="5" Grid.Column="1"/>
-            <ListBox x:Name="listBox2" SelectionChanged="listBox_SelectionChanged" Grid.Column="2" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
-            <GridSplitter x:Name="gridSplitter1" HorizontalAlignment="Stretch" Height="100" Margin="0" Width="5" Grid.Column="3"/>
-            <ListBox x:Name="listBox3" SelectionChanged="listBox_SelectionChanged" Grid.Column="4" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
-            <GridSplitter x:Name="gridSplitter2" HorizontalAlignment="Stretch" Height="100" Margin="0" Width="5" Grid.Column="5"/>
-            <ListBox x:Name="listBox4" SelectionChanged="listBox_SelectionChanged" Grid.Column="6" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
-            <GridSplitter x:Name="gridSplitter3" HorizontalAlignment="Stretch" Height="100" Margin="0" Width="5" Grid.Column="7"/>
-            <StackPanel Grid.Column="8" >
+            <GridSplitter x:Name="gridSplitter1" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="1"/>
+
+            <ScrollViewer x:Name="dirsScroll" Grid.Column="2" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" CanContentScroll="True">
+                <Grid x:Name="colGrid" Margin="0,5,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="100" />
+                        <ColumnDefinition Width="1" />
+                        <ColumnDefinition Width="100" />
+                    </Grid.ColumnDefinitions>
+                    <ListBox x:Name="listBox2" SelectionChanged="listBox_SelectionChanged" Grid.Column="0" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                    <GridSplitter x:Name="gridSplitter2" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="1"/>
+                    <ListBox x:Name="listBox3" SelectionChanged="listBox_SelectionChanged" Grid.Column="2" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled"/>
+                    <GridSplitter x:Name="gridSplitter3" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="3"/>
+                    <ListBox x:Name="listBox4" SelectionChanged="listBox_SelectionChanged" Grid.Column="4" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <GridSplitter x:Name="gridSplitter4" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="5"/>
+                    <ListBox x:Name="listBox5" SelectionChanged="listBox_SelectionChanged" Grid.Column="6" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <GridSplitter x:Name="gridSplitter5" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="7"/>
+                    <ListBox x:Name="listBox6" SelectionChanged="listBox_SelectionChanged" Grid.Column="8" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                    <GridSplitter x:Name="gridSplitter6" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="9"/>
+                    <ListBox x:Name="listBox7" SelectionChanged="listBox_SelectionChanged" Grid.Column="10" SelectionMode="Extended" KeyDown="listBox_KeyDown" ScrollViewer.HorizontalScrollBarVisibility="Disabled" />
+                </Grid>
+            </ScrollViewer>
+            <GridSplitter x:Name="gridSplitter7" HorizontalAlignment="Stretch" Margin="0" Width="5" Grid.Column="3"/>
+            <StackPanel Grid.Column="4" x:Name="previewPanel">
                 <Image x:Name="imagePreview"/>
                 <TextBlock x:Name="textBlockPreview" TextWrapping="Wrap" Text="TextBlock"/>
                 <MediaElement x:Name="mediaPreview"/>

@@ -33,16 +33,21 @@ namespace FinderWpf
     public partial class MainWindow : Window
     {
         private IList<ListBox> listBoxes;
+        private IList<GridSplitter> splitters;
         private IList<string> roots;
         private Queue<string> pathHistory;
+        private bool ignoreNested;
+        private int prevMaxIndex;
 
         public MainWindow()
         {
             InitializeComponent();
-            listBoxes = new[] { listBox1, listBox2, listBox3, listBox4 };
+            listBoxes = new[] { listBox1, listBox2, listBox3, listBox4, listBox5, listBox6, listBox7 };
+            splitters = new[] { gridSplitter1, gridSplitter2, gridSplitter3, gridSplitter4, gridSplitter5, gridSplitter6, gridSplitter7 };
             roots = DriveInfo.GetDrives().Select(d => d.Name).ToList();
-            roots.Add(@"D:\Dropbox\zdjeciaHD");
+            roots.Add(@"Y:\zdjeciaHD");
             var rootList = roots.Select(r => new ListItem {Name = r.TrimEnd('\\'), ParentPath = null, FullPath = r, Type="Q", Forward=">"});
+            ignoreNested = false;
 
             listBox1.ItemsSource = rootList;
             foreach (var listBox in listBoxes.Skip(1))
@@ -65,11 +70,36 @@ namespace FinderWpf
             newListBox.SelectionChanged += listBox_SelectionChanged;
             newListBox.KeyDown += listBox_KeyDown;
             newListBox.SetValue(ScrollViewer.HorizontalScrollBarVisibilityProperty, ScrollBarVisibility.Disabled);
+            listBoxes.Add(newListBox);
+        }
+
+        private void centerBoxes(int maxIndex)
+        {
+            if (maxIndex == prevMaxIndex)
+                return;
+            for (var i=0; i<listBoxes.Count - 1; i++)
+            {
+                if (i>0)
+                    colGrid.ColumnDefinitions[2 * i - 1].Width = new GridLength(i >= maxIndex ? 0 : 1);
+                colGrid.ColumnDefinitions[2 * i].Width = new GridLength(i >= maxIndex ? 0 : 150);
+            }
+            if (maxIndex > prevMaxIndex)
+            {
+                    Dispatcher.Invoke(() =>
+                    {
+                        dirsScroll.ScrollToEnd();
+                    }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+            }
+            prevMaxIndex = maxIndex;
         }
 
         private void listBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (ignoreNested)
+                return;
             var listBox = (ListBox) sender;
+            var listBoxIndex = listBoxes.IndexOf(listBox);
+
             textBlockPreview.Visibility = Visibility.Collapsed;
             textBlockPreview.Text = string.Empty;
             mediaPreview.Visibility = Visibility.Collapsed;
@@ -77,15 +107,13 @@ namespace FinderWpf
             imagePreview.Visibility = Visibility.Collapsed;
             imagePreview.Source = null;
 
-            var listBoxIndex = listBoxes.IndexOf(listBox);
-
             for (var i = listBoxIndex + 1; i < listBoxes.Count; i++)
                 listBoxes[i].ItemsSource = null;
 
-            if (e.AddedItems.Count != 1)
+            if (listBox.SelectedItems.Count != 1)
                 return;
 
-            var item = (ListItem) e.AddedItems[0];
+            var item = (ListItem)listBox.SelectedItem;
             var path = item.FullPath;
             if (path == null)
                 return;
@@ -100,7 +128,9 @@ namespace FinderWpf
             {
                 if (!File.GetAttributes(path).HasFlag(FileAttributes.Directory))
                 {
-                    if (new [] {".jpg", ".jpeg", ".png"}.Contains(Path.GetExtension(path)))
+                    filePreviewGrid.ColumnDefinitions[4].MinWidth = 150;
+                    centerBoxes(listBoxIndex);
+                    if (new [] {".jpg", ".jpeg", ".png"}.Contains(Path.GetExtension(path).ToLower()))
                     {
                         imagePreview.Visibility = Visibility.Visible;
                         imagePreview.Source = new BitmapImage(new Uri(path, UriKind.Absolute));
@@ -124,16 +154,15 @@ namespace FinderWpf
                     return;
                 }
 
-                if (listBoxIndex + 1 == listBoxes.Count)
+                filePreviewGrid.ColumnDefinitions[4].MinWidth = 0;
+
+                if (listBoxIndex + 1 == listBoxes.Count || !Directory.Exists(path))
                     return;
 
                 var nextListBox = listBoxes[listBoxIndex + 1];
                 nextListBox.Items.Clear();
 
-                if (!Directory.Exists(path))
-                    return;
-
-
+                centerBoxes(listBoxIndex + 1);
                 
                 var dirs = Directory.GetDirectories(path);
                 var items = dirs.Select(dir => new ListItem
@@ -158,6 +187,7 @@ namespace FinderWpf
 
                 var lastHistory = getMatchingHistory(path);
                 var selected = lastHistory == null ? null : items.FirstOrDefault(i => lastHistory.Equals(i.FullPath, StringComparison.InvariantCultureIgnoreCase) || lastHistory.StartsWith(i.FullPath + @"\", StringComparison.InvariantCultureIgnoreCase));
+                ignoreNested = true;
                 nextListBox.SelectedItem = selected;
 
                 if (selected != null)
@@ -170,17 +200,18 @@ namespace FinderWpf
                 imagePreview.Source = null;
                 textBlockPreview.Text = ex.ToString();
             }
+            ignoreNested = false;
 
         }
 
         private void listBox_KeyDown(object sender, KeyEventArgs e)
         {
             var mainBox = (ListBox)sender;
+            var boxIndex = listBoxes.IndexOf(mainBox);
             switch (e.Key)
             {
                 case Key.Right:
                     e.Handled = true;
-                    var boxIndex = listBoxes.IndexOf(mainBox);
                     if (boxIndex + 1 == listBoxes.Count)
                         break;
                     var nextListBox = listBoxes[boxIndex + 1];
@@ -192,15 +223,16 @@ namespace FinderWpf
                                    nextItems.First();
                     nextListBox.SelectedItem = selected;
                     (nextListBox.ItemContainerGenerator.ContainerFromItem(selected) as ListBoxItem)?.Focus();
+                    listBox_SelectionChanged(nextListBox, null);
 
                     break;
                 case Key.Left:
                     e.Handled = true;
-                    int listIndex = listBoxes.IndexOf(sender as ListBox);
-                    if (listIndex == 0)
+                    if (boxIndex == 0)
                         break;
-                    var prevListBox = listBoxes[listIndex - 1];
+                    var prevListBox = listBoxes[boxIndex - 1];
                     (prevListBox.ItemContainerGenerator.ContainerFromItem(prevListBox.SelectedItem) as ListBoxItem)?.Focus();
+                    listBox_SelectionChanged(prevListBox, null);
 
                     break;
                 case Key.Space:
@@ -210,5 +242,9 @@ namespace FinderWpf
             }
         }
 
+        private void ScrollViewer_Scroll(object sender, System.Windows.Controls.Primitives.ScrollEventArgs e)
+        {
+
+        }
     }
 }
